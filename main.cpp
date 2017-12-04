@@ -5,13 +5,9 @@
 
 #include <iomanip>    
 #include <iostream>
-#include <fstream>
 #include <omp.h>
 
 unsigned int config::sample_cardinality;
-
-std::ofstream out_file("h0_e0_h1_t_student.data");
-
 
 template<int alpha_num, int alpha_den>
 int run() noexcept {
@@ -45,14 +41,14 @@ int run() noexcept {
 
 			std::fill(freq_montecarlo.begin(), freq_montecarlo.end(), 0);
 
-/*			if(omp_get_thread_num() == 0) {
+			if(omp_get_thread_num() == 0) {
 				if ( j % (config::runs/80) == 0)
 					std::cout << " " << j*8 << "/" << config::runs << std::endl;
 			}
-*/
-//			montecarlo_frequencies<T_STUDENT>(random_gen, freq_montecarlo);
 
-			montecarlo_frequencies_evt<0,1>(random_gen, freq_montecarlo);
+			montecarlo_frequencies<T_STUDENT>(random_gen, freq_montecarlo);
+
+//			montecarlo_frequencies_evt<1,2>(random_gen, freq_montecarlo);
 
 			calculate_cumulative(freq_montecarlo, F_montecarlo);
 
@@ -72,10 +68,7 @@ int run() noexcept {
 	unsigned long not_reject=0;
 	not_reject = config::runs - reject;
 
-	out_file << alpha << "," << config::sample_cardinality << "," << reject << "," << not_reject << "," << std::setprecision(51) << ((double)reject) / (not_reject+reject) << std::endl;
-
-
-	std::cout << "REJECT: " << reject << " NOT REJECT: " << not_reject << " POWER: " << std::setprecision(51) << ((double)reject) / (not_reject+reject) << std::endl;
+	std::cout << alpha << "," << config::sample_cardinality << "," << reject << "," << not_reject << "," << std::setprecision(51) << ((double)reject) / (not_reject+reject) << std::endl;
 
 	return not_reject;
 
@@ -87,13 +80,7 @@ int main(int argc, char* argv[]) {
 
 	std::vector<unsigned int> cardinalities({50, 100, 250, 500, 750, 1000, 2500, 5000, 10000});
 
-	std::cout << std::endl << "############################################" << std::endl;
-	std::cout << "####  ALPHA=0.05" << std::endl;
-	std::cout << "############################################" << std::endl << std::endl;
-
 	for (const auto i : cardinalities) {
-		std::cout << "-------------------------" << std::endl;
-		std::cout << "N=" << i << std::endl;
 		config::sample_cardinality = i;
 		int not_reject = run<5,100>();
 		if (not_reject == 0) {
@@ -102,14 +89,7 @@ int main(int argc, char* argv[]) {
 
 	}
 
-	std::cout << std::endl << "############################################" << std::endl;
-	std::cout << "####  ALPHA=0.01" << std::endl;
-	std::cout << "############################################" << std::endl << std::endl;
-
-
 	for (const auto i : cardinalities) {
-		std::cout << "-------------------------" << std::endl;
-		std::cout << "N=" << i << std::endl;
 		config::sample_cardinality = i;
 		int not_reject = run<1,100>();
 		if (not_reject == 0) {

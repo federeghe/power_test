@@ -7,6 +7,20 @@
 #include <iostream>
 #include <omp.h>
 
+#define DIST_T_STUDENT 1
+#define DIST_UNIFORM 2
+#define DIST_EVT0 3
+#define DIST_EVT_0_5 4
+#define DIST_EVT_N_0_5 5
+
+#define H1 DIST_T_STUDENT
+
+
+#define H0 DIST_EVT_0_5
+
+#define DEBUG 0
+
+
 unsigned int config::sample_cardinality;
 
 template<int alpha_num, int alpha_den>
@@ -18,7 +32,16 @@ int run() noexcept {
 
 	F_evt.resize(config::size);
 
+	#if H0 == DIST_EVT0
 	fill_evt_cumulative_xi0(0, 1, F_evt);
+	#elif H0 == DIST_EVT_0_5
+	fill_evt_cumulative(0.5, 0, 1, F_evt);
+	#elif H0 == DIST_EVT_N_0_5
+	fill_evt_cumulative(-0.5, 0, 1, F_evt);
+	#else
+		#error "Unknown distribution"
+	#endif
+
 
 
 	double ks_critical_value = get_kd_critical<alpha_num, alpha_den>(config::sample_cardinality);
@@ -41,14 +64,26 @@ int run() noexcept {
 
 			std::fill(freq_montecarlo.begin(), freq_montecarlo.end(), 0);
 
+#if DEBUG
 			if(omp_get_thread_num() == 0) {
 				if ( j % (config::runs/80) == 0)
 					std::cout << " " << j*8 << "/" << config::runs << std::endl;
 			}
+#endif
 
+#if H1 == DIST_T_STUDENT
 			montecarlo_frequencies<T_STUDENT>(random_gen, freq_montecarlo);
-
-//			montecarlo_frequencies_evt<1,2>(random_gen, freq_montecarlo);
+#elif H1 == DIST_UNIFORM
+			montecarlo_frequencies<UNIFORM>(random_gen, freq_montecarlo);
+#elif H1 == DIST_EVT0
+			montecarlo_frequencies_evt<0,1>(random_gen, freq_montecarlo);
+#elif H1 == DIST_EVT_0_5
+			montecarlo_frequencies_evt<1,2>(random_gen, freq_montecarlo);
+#elif H1 == DIST_EVT_N_0_5
+			montecarlo_frequencies_evt<-1,2>(random_gen, freq_montecarlo);
+#else
+	#error "Unknown"
+#endif
 
 			calculate_cumulative(freq_montecarlo, F_montecarlo);
 
@@ -86,7 +121,6 @@ int main(int argc, char* argv[]) {
 		if (not_reject == 0) {
 			break;
 		}
-
 	}
 
 	for (const auto i : cardinalities) {
@@ -95,7 +129,6 @@ int main(int argc, char* argv[]) {
 		if (not_reject == 0) {
 			break;
 		}
-
 	}
 
 

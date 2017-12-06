@@ -12,6 +12,7 @@
 #define DIST_EVT0 3
 #define DIST_EVT_0_5 4
 #define DIST_EVT_N_0_5 5
+#define DIST_NORMAL 5
 
 #define H1 DIST_T_STUDENT
 
@@ -75,6 +76,8 @@ int run() noexcept {
 			montecarlo_frequencies<T_STUDENT>(random_gen, freq_montecarlo);
 #elif H1 == DIST_UNIFORM
 			montecarlo_frequencies<UNIFORM>(random_gen, freq_montecarlo);
+#elif H1 == DIST_NORMAL
+			montecarlo_frequencies<NORMAL>(random_gen, freq_montecarlo);
 #elif H1 == DIST_EVT0
 			montecarlo_frequencies_evt<0,1>(random_gen, freq_montecarlo);
 #elif H1 == DIST_EVT_0_5

@@ -6,7 +6,7 @@ namespace config {
 	constexpr double dist_max=15;
 	constexpr double step=0.01;
 	constexpr unsigned int size = (dist_max - dist_min) / step;
-	constexpr unsigned long runs = 1e7;
+	constexpr unsigned long runs = 1e9;
 	extern unsigned int sample_cardinality;
 }
 

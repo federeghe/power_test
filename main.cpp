@@ -12,12 +12,11 @@
 #define DIST_EVT0 3
 #define DIST_EVT_0_5 4
 #define DIST_EVT_N_0_5 5
-#define DIST_NORMAL 5
+#define DIST_NORMAL 6
 
-#define H1 DIST_T_STUDENT
+//#define H1 DIST_EVT_0_5
 
-
-#define H0 DIST_EVT_0_5
+//#define H0 DIST_EVT_0_5
 
 #define DEBUG 0
 
@@ -91,6 +90,10 @@ int run() noexcept {
 			calculate_cumulative(freq_montecarlo, F_montecarlo);
 
 			for (unsigned int i=0; i < config::size; i++) {
+
+#if DEBUG
+				std::cout << i << ": " << F_evt[i] << "==" <<  F_montecarlo[i] << std::endl;
+#endif
 
 				double diff = std::abs(F_evt[i] - F_montecarlo[i]);
 				if (diff > ks_critical_value) {

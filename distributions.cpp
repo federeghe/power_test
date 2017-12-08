@@ -14,7 +14,7 @@ extern void fill_evt_cumulative(double xi, double mu, double sigma, std::vector<
 		double cond_value =  1.0 + xi * ((x-mu)/sigma);
 
 		if ( cond_value < 0 ) {
-			output[i] = 0;
+			output[i] = xi > 0 ? 0 : 1;
 			continue;
 		}
 

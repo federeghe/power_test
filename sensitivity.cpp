@@ -24,8 +24,8 @@ void run(double xi) noexcept {
 	fill_evt_cumulative_xi0(0, 1, F_evt_0);
 	fill_evt_cumulative(xi, 0, 1, F_evt_eps);
 
-	double ks_critical_value1 = get_kd_critical<1, 100>(config::sample_cardinality);
-	double ks_critical_value2 = get_kd_critical<5, 100>(config::sample_cardinality);
+	double ks_critical_value1 = get_ks_critical<1, 100>(config::sample_cardinality);
+	double ks_critical_value2 = get_ks_critical<5, 100>(config::sample_cardinality);
 
 #if DEBUG
 	std::cout << i << ": " << F_evt_0[i] << "==" <<  F_evt_eps[i] << std::endl;

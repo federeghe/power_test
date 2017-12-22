@@ -2,6 +2,7 @@
 #include "montecarlo.hpp"
 #include "distributions.hpp"
 #include "simulation.hpp"
+#include "test_statistics.hpp"
 
 #include <iomanip>    
 #include <iostream>
@@ -18,8 +19,36 @@
 
 //#define H0 DIST_EVT_0_5
 
-#define DEBUG 0
+//#define DEBUG 1
 
+#define TEST_KS 1
+#define TEST_AD 2
+
+#if H0 == DIST_EVT0
+constexpr double evt_param = 0.0;
+#elif H0 == DIST_EVT_0_5
+constexpr double evt_param = 0.5;
+#elif H0 == DIST_EVT_N_0_5
+constexpr double evt_param = -0.5;
+#else
+	#error "Unknown distribution"
+#endif
+
+#if H1 == DIST_T_STUDENT
+	#define MONTE_CARLO_GENERATOR montecarlo_frequencies<T_STUDENT>
+#elif H1 == DIST_UNIFORM
+	#define MONTE_CARLO_GENERATOR montecarlo_frequencies<UNIFORM>
+#elif H1 == DIST_NORMAL
+	#define MONTE_CARLO_GENERATOR montecarlo_frequencies<NORMAL>
+#elif H1 == DIST_EVT0
+	#define MONTE_CARLO_GENERATOR montecarlo_frequencies_evt<0,1>
+#elif H1 == DIST_EVT_0_5
+	#define MONTE_CARLO_GENERATOR montecarlo_frequencies_evt<1,2>
+#elif H1 == DIST_EVT_N_0_5
+	#define MONTE_CARLO_GENERATOR montecarlo_frequencies_evt<-1,2>
+#else
+	#error "Unknown"
+#endif
 
 unsigned int config::sample_cardinality;
 
@@ -34,17 +63,21 @@ int run() noexcept {
 
 	#if H0 == DIST_EVT0
 	fill_evt_cumulative_xi0(0, 1, F_evt);
-	#elif H0 == DIST_EVT_0_5
-	fill_evt_cumulative(0.5, 0, 1, F_evt);
-	#elif H0 == DIST_EVT_N_0_5
-	fill_evt_cumulative(-0.5, 0, 1, F_evt);
 	#else
-		#error "Unknown distribution"
+	fill_evt_cumulative(evt_param, 0, 1, F_evt);
 	#endif
 
 
+	#if TEST == TEST_KS
+		double ks_critical_value = get_ks_critical<alpha_num, alpha_den>(config::sample_cardinality);
+	#elif TEST == TEST_AD
+		double ad_critical_value = AndersonDarlingCV_EV<alpha_num, alpha_den>::get_critical_value(config::sample_cardinality, evt_param);
+	#elif TEST == TEST_X2
+		double x2_critical_value = X2CV<alpha_num, alpha_den>::value(config::sample_cardinality);
 
-	double ks_critical_value = get_kd_critical<alpha_num, alpha_den>(config::sample_cardinality);
+	#else
+		#error "Unknown test"
+	#endif
 
 	unsigned long reject=0;
 	
@@ -70,27 +103,12 @@ int run() noexcept {
 					std::cout << " " << j*8 << "/" << config::runs << std::endl;
 			}
 #endif
+			MONTE_CARLO_GENERATOR(random_gen, freq_montecarlo);
 
-#if H1 == DIST_T_STUDENT
-			montecarlo_frequencies<T_STUDENT>(random_gen, freq_montecarlo);
-#elif H1 == DIST_UNIFORM
-			montecarlo_frequencies<UNIFORM>(random_gen, freq_montecarlo);
-#elif H1 == DIST_NORMAL
-			montecarlo_frequencies<NORMAL>(random_gen, freq_montecarlo);
-#elif H1 == DIST_EVT0
-			montecarlo_frequencies_evt<0,1>(random_gen, freq_montecarlo);
-#elif H1 == DIST_EVT_0_5
-			montecarlo_frequencies_evt<1,2>(random_gen, freq_montecarlo);
-#elif H1 == DIST_EVT_N_0_5
-			montecarlo_frequencies_evt<-1,2>(random_gen, freq_montecarlo);
-#else
-	#error "Unknown"
-#endif
-
+#if TEST == TEST_KS
 			calculate_cumulative(freq_montecarlo, F_montecarlo);
 
 			for (unsigned int i=0; i < config::size; i++) {
-
 #if DEBUG
 				std::cout << i << ": " << F_evt[i] << "==" <<  F_montecarlo[i] << std::endl;
 #endif
@@ -100,7 +118,22 @@ int run() noexcept {
 					reject++;
 					break;
 				}
+z			}
+
+#elif TEST == TEST_AD
+
+			double S = get_ad_statistic(F_evt, freq_montecarlo);
+			if ( S > ad_critical_value ) {
+				reject++;
 			}
+#if DEBUG
+			std::cout << "S=" << S << " crit_value=" << ad_critical_value << std::endl;
+#endif
+
+#else
+	#error "Unknown test"
+#endif
+
 
 		}
 	

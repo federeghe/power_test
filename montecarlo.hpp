@@ -16,15 +16,15 @@ typedef enum distribution_e {
 
 
 inline void put_output(double x, std::vector<unsigned int> &output) {
-
-	constexpr double ratio = 1.0/config::step;
+	double step = (config::dist_max - config::dist_min) / config::sample_cardinality;
+	double ratio = 1.0/step;
 
 	x = std::ceil(x * ratio) / ratio;
 	// Get the corresponding index
-	double index = (x - config::dist_min) / config::step;
+	double index = (x - config::dist_min) / step;
 
 	if (index < 0) index = 0;
-	if (index > config::size-1) index = config::size-1;
+	if (index > config::sample_cardinality-1) index = config::sample_cardinality-1;
 
 	output[index]++;
 }

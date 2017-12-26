@@ -6,11 +6,13 @@
 
 extern void fill_evt_cumulative(double xi, double mu, double sigma, std::vector<double> &output) {
 
-	assert(output.size() >= config::size);
+	assert(output.size() >= config::sample_cardinality);
 
-	for (unsigned int i=0; i < config::size; i++) {
+	double step = (config::dist_max - config::dist_min) / config::sample_cardinality;
 
-		double x = config::dist_min + i * config::step;
+	for (unsigned int i=0; i < config::sample_cardinality; i++) {
+
+		double x = config::dist_min + i * step;
 		double cond_value =  1.0 + xi * ((x-mu)/sigma);
 
 		if ( cond_value < 0 ) {
@@ -28,11 +30,13 @@ extern void fill_evt_cumulative(double xi, double mu, double sigma, std::vector<
 
 extern void fill_evt_cumulative_xi0(double mu, double sigma, std::vector<double> &output) {
 
-	assert(output.size() >= config::size);
+	assert(output.size() >= config::sample_cardinality);
 
-	for (unsigned int i=0; i < config::size; i++) {
+	double step = (config::dist_max - config::dist_min) / config::sample_cardinality;
 
-		double x = config::dist_min + i * config::step;
+	for (unsigned int i=0; i < config::sample_cardinality; i++) {
+
+		double x = config::dist_min + i * step;
 
 		// t(x) calculation
 		double t_x = std::exp( - ( x - mu ) / sigma);

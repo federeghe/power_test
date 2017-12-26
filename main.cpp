@@ -59,7 +59,7 @@ int run() noexcept {
 
 	std::vector<double> F_evt;
 
-	F_evt.resize(config::size);
+	F_evt.resize(config::sample_cardinality);
 
 	#if H0 == DIST_EVT0
 	fill_evt_cumulative_xi0(0, 1, F_evt);
@@ -90,8 +90,8 @@ int run() noexcept {
 
 		std::vector<unsigned int> freq_montecarlo;
 		std::vector<double> F_montecarlo;
-		freq_montecarlo.resize(config::size);
-		F_montecarlo.resize(config::size);
+		freq_montecarlo.resize(config::sample_cardinality);
+		F_montecarlo.resize(config::sample_cardinality);
 
 		#pragma omp for reduction(+:reject)
 		for (unsigned long j=0; j < config::runs; j++) {
@@ -109,7 +109,7 @@ int run() noexcept {
 #if TEST == TEST_KS
 			calculate_cumulative(freq_montecarlo, F_montecarlo);
 
-			for (unsigned int i=0; i < config::size; i++) {
+			for (unsigned int i=0; i < config::sample_cardinality; i++) {
 #if DEBUG
 				std::cout << i << ": " << F_evt[i] << "==" <<  F_montecarlo[i] << std::endl;
 #endif

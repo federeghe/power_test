@@ -18,8 +18,8 @@ void run(double xi) noexcept {
 	std::vector<double> F_evt_0;
 	std::vector<double> F_evt_eps;
 
-	F_evt_0.resize(config::size);
-	F_evt_eps.resize(config::size);
+	F_evt_0.resize(config::sample_cardinality);
+	F_evt_eps.resize(config::sample_cardinality);
 
 	fill_evt_cumulative_xi0(0, 1, F_evt_0);
 	fill_evt_cumulative(xi, 0, 1, F_evt_eps);
@@ -36,7 +36,7 @@ void run(double xi) noexcept {
 	bool reject1 = false;
 	bool reject2 = false;
 
-	for (unsigned int i=0; i < config::size; i++) {
+	for (unsigned int i=0; i < config::sample_cardinality; i++) {
 		double diff = std::abs(F_evt_0[i] - F_evt_eps[i]);
 		if (diff > ks_critical_value1) {
 			reject1=true;

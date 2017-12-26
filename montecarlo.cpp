@@ -13,8 +13,6 @@ extern void calculate_cumulative(const std::vector<unsigned int> &input, std::ve
 	}
 }
 
-
-
 template <>
 void montecarlo_frequencies<NORMAL>(std::mt19937 &rng, std::vector<unsigned int> &output) {
 

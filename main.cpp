@@ -72,6 +72,7 @@ int run() noexcept {
 		double ks_critical_value = get_ks_critical<alpha_num, alpha_den>(config::sample_cardinality);
 	#elif TEST == TEST_AD
 		double ad_critical_value = AndersonDarlingCV_EV<alpha_num, alpha_den>::get_critical_value(config::sample_cardinality, evt_param);
+
 	#elif TEST == TEST_X2
 		double x2_critical_value = X2CV<alpha_num, alpha_den>::value(config::sample_cardinality);
 
@@ -118,7 +119,7 @@ int run() noexcept {
 					reject++;
 					break;
 				}
-z			}
+			}
 
 #elif TEST == TEST_AD
 

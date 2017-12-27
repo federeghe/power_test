@@ -4,6 +4,7 @@
 #include "simulation.hpp"
 #include "test_statistics.hpp"
 
+#include <algorithm>
 #include <iomanip>    
 #include <iostream>
 #include <omp.h>
@@ -25,10 +26,16 @@
 #define TEST_AD 2
 
 #if H0 == DIST_EVT0
+	#define EVT_PARAM_NUM 0
+	#define EVT_PARAM_DEN 1
 constexpr double evt_param = 0.0;
 #elif H0 == DIST_EVT_0_5
+	#define EVT_PARAM_NUM 1
+	#define EVT_PARAM_DEN 2
 constexpr double evt_param = 0.5;
 #elif H0 == DIST_EVT_N_0_5
+	#define EVT_PARAM_NUM -1
+	#define EVT_PARAM_DEN 2
 constexpr double evt_param = -0.5;
 #else
 	#error "Unknown distribution"
@@ -53,10 +60,41 @@ constexpr double evt_param = -0.5;
 unsigned int config::sample_cardinality;
 
 template<int alpha_num, int alpha_den>
-int run() noexcept {
+unsigned long perform_ad_run() {
 
-	constexpr double alpha = ((double)alpha_num)/((double)alpha_den);
+	double ad_critical_value = AndersonDarlingCV_EV<alpha_num, alpha_den>::get_critical_value(config::sample_cardinality, evt_param);
 
+	unsigned long reject=0;
+
+	#pragma omp parallel
+	{
+		thread_local static std::mt19937 random_gen(std::random_device{}());
+		std::vector<double> sample;
+		sample.resize(config::sample_cardinality);
+
+		#pragma omp for reduction(+:reject)
+		for (unsigned long j=0; j < config::runs; j++) {
+
+			for (unsigned int i=0; i < config::sample_cardinality; i++) {
+				sample[i] = montecarlo_evt_sample<EVT_PARAM_NUM, EVT_PARAM_DEN>(rng);
+			}
+
+			std::sort(sample.begin(), sample.end());
+
+			double S = get_ad_statistic(sample);
+			if ( S > ad_critical_value ) {
+				reject++;
+			}
+#if DEBUG
+			std::cout << "S=" << S << " crit_value=" << ad_critical_value << std::endl;
+#endif
+		}
+	}
+	return reject;
+}
+
+template<int alpha_num, int alpha_den>
+unsigned long perform_ks_run() {
 	std::vector<double> F_evt;
 
 	F_evt.resize(config::sample_cardinality);
@@ -67,21 +105,10 @@ int run() noexcept {
 	fill_evt_cumulative(evt_param, 0, 1, F_evt);
 	#endif
 
-
-	#if TEST == TEST_KS
-		double ks_critical_value = get_ks_critical<alpha_num, alpha_den>(config::sample_cardinality);
-	#elif TEST == TEST_AD
-		double ad_critical_value = AndersonDarlingCV_EV<alpha_num, alpha_den>::get_critical_value(config::sample_cardinality, evt_param);
-
-	#elif TEST == TEST_X2
-		double x2_critical_value = X2CV<alpha_num, alpha_den>::value(config::sample_cardinality);
-
-	#else
-		#error "Unknown test"
-	#endif
+	double ks_critical_value = get_ks_critical<alpha_num, alpha_den>(config::sample_cardinality);
 
 	unsigned long reject=0;
-	
+
 	#pragma omp parallel firstprivate(F_evt)
 	{
 
@@ -106,7 +133,6 @@ int run() noexcept {
 #endif
 			MONTE_CARLO_GENERATOR(random_gen, freq_montecarlo);
 
-#if TEST == TEST_KS
 			calculate_cumulative(freq_montecarlo, F_montecarlo);
 
 			for (unsigned int i=0; i < config::sample_cardinality; i++) {
@@ -121,24 +147,27 @@ int run() noexcept {
 				}
 			}
 
-#elif TEST == TEST_AD
-
-			double S = get_ad_statistic(F_evt, freq_montecarlo);
-			if ( S > ad_critical_value ) {
-				reject++;
-			}
-#if DEBUG
-			std::cout << "S=" << S << " crit_value=" << ad_critical_value << std::endl;
-#endif
-
-#else
-	#error "Unknown test"
-#endif
-
 
 		}
 	
 	}
+
+
+	return reject;
+
+}
+
+template<int alpha_num, int alpha_den>
+int run() noexcept {
+	constexpr double alpha = ((double)alpha_num)/((double)alpha_den);
+
+	#if TEST == TEST_KS
+		unsigned long reject=perform_ks_run<alpha_num, alpha_den>();
+	#elif TEST == TEST_AD
+		unsigned long reject=perform_ad_run<alpha_num, alpha_den>();
+	#else
+		#error "Unknown test"
+	#endif	
 
 	unsigned long not_reject=0;
 	not_reject = config::runs - reject;

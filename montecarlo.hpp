@@ -33,7 +33,7 @@ template <distribution_t T=NORMAL>
 extern void montecarlo_frequencies(std::mt19937 &rng, std::vector<unsigned int> &output);
 
 template <int num=0, int den=1, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
-void montecarlo_frequencies_evt(std::mt19937 &rng, std::vector<unsigned int> &output) {
+inline double montecarlo_evt_sample(std::mt19937 &rng) {
 
 	static_assert(den != 0, "Denominator must be != from 0!");
 
@@ -43,18 +43,26 @@ void montecarlo_frequencies_evt(std::mt19937 &rng, std::vector<unsigned int> &ou
 
 	std::uniform_real_distribution<double> distribution(mu,sigma);
 
-	for (unsigned int i=0; i < config::sample_cardinality; i++) {
-		double x = distribution(rng);
+	double x = distribution(rng);
 
-		// Convert it with the p-quantile
-		if (num != 0) {
-			x = mu + sigma * (1-std::pow((-std::log(x)),(-xi)))/(-xi);
-		} else {
-			x = mu - sigma * std::log(-std::log(x));
-		}
-		put_output(x, output);
+	// Convert it with the p-quantile
+	if (num != 0) {
+		x = mu + sigma * (1-std::pow((-std::log(x)),(-xi)))/(-xi);
+	} else {
+		x = mu - sigma * std::log(-std::log(x));
 	}
 
+	return x;
+
+}
+
+
+template <int num=0, int den=1, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
+inline void montecarlo_frequencies_evt(std::mt19937 &rng, std::vector<unsigned int> &output) {
+	for (unsigned int i=0; i < config::sample_cardinality; i++) {
+		double x = montecarlo_evt_sample<num, den, mu_num, mu_den, sigma_num, sigma_den>(rng);
+		put_output(x, output);
+	}
 }
 
 extern void calculate_cumulative(const std::vector<unsigned int> &input, std::vector<double> &output);

@@ -76,7 +76,7 @@ unsigned long perform_ad_run() {
 		for (unsigned long j=0; j < config::runs; j++) {
 
 			for (unsigned int i=0; i < config::sample_cardinality; i++) {
-				sample[i] = montecarlo_evt_sample<EVT_PARAM_NUM, EVT_PARAM_DEN>(rng);
+				sample[i] = montecarlo_evt_sample<EVT_PARAM_NUM, EVT_PARAM_DEN>(random_gen);
 			}
 
 			std::sort(sample.begin(), sample.end());

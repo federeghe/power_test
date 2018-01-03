@@ -57,6 +57,7 @@ constexpr double evt_param = -0.5;
 	#error "Unknown"
 #endif
 
+thread_local static std::mt19937 random_gen(std::random_device{}());
 unsigned int config::sample_cardinality;
 
 template<int alpha_num, int alpha_den>
@@ -68,7 +69,6 @@ unsigned long perform_ad_run() {
 
 	#pragma omp parallel
 	{
-		thread_local static std::mt19937 random_gen(std::random_device{}());
 		std::vector<double> sample;
 		sample.resize(config::sample_cardinality);
 
@@ -81,7 +81,7 @@ unsigned long perform_ad_run() {
 
 			std::sort(sample.begin(), sample.end());
 
-			double S = get_ad_statistic(sample);
+			double S = get_ad_statistic<EVT_PARAM_NUM, EVT_PARAM_DEN>(sample);
 			if ( S > ad_critical_value ) {
 				reject++;
 			}
@@ -172,15 +172,13 @@ int run() noexcept {
 	unsigned long not_reject=0;
 	not_reject = config::runs - reject;
 
-	std::cout << alpha << "," << config::sample_cardinality << "," << reject << "," << not_reject << "," << std::setprecision(51) << ((double)reject) / (not_reject+reject) << std::endl;
+	std::cout << std::setprecision(2) << alpha << "," << config::sample_cardinality << "," << reject << "," << not_reject << "," << std::setprecision(51) << ((double)reject) / (not_reject+reject) << std::endl;
 
 	return not_reject;
 
 }
 
 int main(int argc, char* argv[]) {
-
-
 
 	std::vector<unsigned int> cardinalities({50, 100, 250, 500, 750, 1000, 2500, 5000, 10000});
 
@@ -199,7 +197,6 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 	}
-
 
 	return 0;
 }

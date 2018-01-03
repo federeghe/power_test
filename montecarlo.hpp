@@ -32,10 +32,42 @@ inline void put_output(double x, std::vector<unsigned int> &output) {
 template <distribution_t T=NORMAL>
 extern void montecarlo_frequencies(std::mt19937 &rng, std::vector<unsigned int> &output);
 
-template <int num=0, int den=1, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
+template <int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
+inline double montecarlo_normal_sample(std::mt19937 &rng) {
+	static_assert(mu_den != 0, "Denominator must be != from 0!");
+	static_assert(sigma_den != 0, "Denominator must be != from 0!");
+
+	constexpr double mu=((double)mu_num)/((double)mu_den);
+	constexpr double sigma=((double)sigma_num)/((double)sigma_den);
+
+	std::normal_distribution<double> distribution(mu,sigma);
+	return distribution(rng);
+}
+
+template <int param_num=10, int param_den=1>
+inline double montecarlo_t_student_sample(std::mt19937 &rng) {
+	static_assert(param_den != 0, "Denominator must be != from 0!");
+
+	constexpr double param=((double)param_num)/((double)param_den);
+
+	std::student_t_distribution<double> distribution(param);
+	return distribution(rng);
+}
+
+template <int start=-2, int end=3>
+inline double montecarlo_uniform_sample(std::mt19937 &rng) {
+	static_assert(end > start, "end must be > start!");
+
+	std::uniform_real_distribution<double> distribution(start,end);
+	return distribution(rng);
+}
+
+template <int num, int den, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
 inline double montecarlo_evt_sample(std::mt19937 &rng) {
 
 	static_assert(den != 0, "Denominator must be != from 0!");
+	static_assert(mu_den != 0, "Denominator must be != from 0!");
+	static_assert(sigma_den != 0, "Denominator must be != from 0!");
 
 	constexpr double xi=((double)num)/((double)den);
 	constexpr double mu=((double)mu_num)/((double)mu_den);

@@ -43,21 +43,26 @@ constexpr double evt_param = -0.5;
 
 #if H1 == DIST_T_STUDENT
 	#define MONTE_CARLO_GENERATOR montecarlo_frequencies<T_STUDENT>
+	#define MONTE_CARLO_SAMPLING montecarlo_t_student_sample
 #elif H1 == DIST_UNIFORM
 	#define MONTE_CARLO_GENERATOR montecarlo_frequencies<UNIFORM>
+	#define MONTE_CARLO_SAMPLING montecarlo_uniform_sample
 #elif H1 == DIST_NORMAL
 	#define MONTE_CARLO_GENERATOR montecarlo_frequencies<NORMAL>
+	#define MONTE_CARLO_SAMPLING montecarlo_normal_sample
 #elif H1 == DIST_EVT0
 	#define MONTE_CARLO_GENERATOR montecarlo_frequencies_evt<0,1>
+	#define MONTE_CARLO_SAMPLING montecarlo_evt_sample<0, 1>
 #elif H1 == DIST_EVT_0_5
 	#define MONTE_CARLO_GENERATOR montecarlo_frequencies_evt<1,2>
+	#define MONTE_CARLO_SAMPLING montecarlo_evt_sample<1, 2>
 #elif H1 == DIST_EVT_N_0_5
 	#define MONTE_CARLO_GENERATOR montecarlo_frequencies_evt<-1,2>
+	#define MONTE_CARLO_SAMPLING montecarlo_evt_sample<-1, 2>
 #else
 	#error "Unknown"
 #endif
 
-thread_local static std::mt19937 random_gen(std::random_device{}());
 unsigned int config::sample_cardinality;
 
 template<int alpha_num, int alpha_den>
@@ -69,6 +74,7 @@ unsigned long perform_ad_run() {
 
 	#pragma omp parallel
 	{
+		std::mt19937 random_gen(std::random_device{}());
 		std::vector<double> sample;
 		sample.resize(config::sample_cardinality);
 
@@ -76,7 +82,7 @@ unsigned long perform_ad_run() {
 		for (unsigned long j=0; j < config::runs; j++) {
 
 			for (unsigned int i=0; i < config::sample_cardinality; i++) {
-				sample[i] = montecarlo_evt_sample<EVT_PARAM_NUM, EVT_PARAM_DEN>(random_gen);
+				sample[i] = MONTE_CARLO_SAMPLING(random_gen);
 			}
 
 			std::sort(sample.begin(), sample.end());

@@ -6,13 +6,13 @@
 #include <cmath>
 #include <limits>
 
-template <int num=0, int den=1, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
+template <int num, int den, int mu_num, int mu_den, int sigma_num, int sigma_den>
 inline double get_ad_statistic_upper(const std::vector<double> &samples) noexcept {
 
 	double S1=0.0, S2=0.0;
 
 	for (unsigned int i=0; i < config::sample_cardinality; i++) {
-		double coeff1 = (2. - ((2*((int)i+1) - 1) / ((double)config::sample_cardinality)) );
+		double coeff1 = (2. - ((2.*((int)i+1.) - 1.) / ((double)config::sample_cardinality)) );
 		double Fi = get_evt_cumulative<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples[i]);
 
 		// This is an extreme case, the distribution is completely
@@ -30,13 +30,13 @@ inline double get_ad_statistic_upper(const std::vector<double> &samples) noexcep
 	return (double)config::sample_cardinality / 2 - S1 - S2;
 }
 
-template <int num=0, int den=1, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
+template <int num, int den, int mu_num, int mu_den, int sigma_num, int sigma_den>
 inline double get_ad_statistic_lower(const std::vector<double> &samples) noexcept {
 
 	double S1=0.0, S2=0.0;
 
 	for (unsigned int i=0; i < config::sample_cardinality; i++) {
-		double coeff2 = (((2*((int)i+1) - 1) / ((double)config::sample_cardinality)) );
+		double coeff2 = (((2.*((int)i+1) - 1.) / ((double)config::sample_cardinality)) );
 		double Fi = get_evt_cumulative<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples[i]);
 
 		// This is an extreme case, the distribution is completely
@@ -48,12 +48,15 @@ inline double get_ad_statistic_lower(const std::vector<double> &samples) noexcep
 
 	}
 
+	S1 *= 2.0;
+
 	return - 3 * (double)config::sample_cardinality / 2 + S1 - S2;
 }
 
-template <int num=0, int den=1, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
+template <int num, int den, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
 inline double get_ad_statistic(const std::vector<double> &samples) noexcept {
 	double upper = get_ad_statistic_upper<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples);
 	double lower = get_ad_statistic_lower<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples);
+
 	return upper + lower;
 }

@@ -12,8 +12,8 @@ inline double get_ad_statistic_upper(const std::vector<double> &samples) noexcep
 	double S1=0.0, S2=0.0;
 
 	for (unsigned int i=0; i < config::sample_cardinality; i++) {
-		double coeff2 = (2. - ((2*i - 1) / config::sample_cardinality) );
-		double Fi = get_evt_cumulative(samples[i]);
+		double coeff1 = (2. - ((2*((int)i+1) - 1) / ((double)config::sample_cardinality)) );
+		double Fi = get_evt_cumulative<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples[i]);
 
 		// This is an extreme case, the distribution is completely
 		// wrong probably. This may be too pessimistic, but safe.
@@ -21,7 +21,7 @@ inline double get_ad_statistic_upper(const std::vector<double> &samples) noexcep
 
 		S1 += Fi;
 
-		S2 += coeff2 * std::log(1. - Fi);
+		S2 += coeff1 * std::log(1. - Fi);
 
 	}
 
@@ -36,16 +36,16 @@ inline double get_ad_statistic_lower(const std::vector<double> &samples) noexcep
 	double S1=0.0, S2=0.0;
 
 	for (unsigned int i=0; i < config::sample_cardinality; i++) {
-		double coeff2 = (((2*i - 1) / config::sample_cardinality) );
-		double Fi = get_evt_cumulative(samples[i]);
+		double coeff2 = (((2*((int)i+1) - 1) / ((double)config::sample_cardinality)) );
+		double Fi = get_evt_cumulative<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples[i]);
 
 		// This is an extreme case, the distribution is completely
 		// wrong probably. This may be too pessimistic, but safe.
 		if (Fi == 0.) return std::numeric_limits<double>::infinity();
 
 		S1 += Fi;
-
 		S2 += coeff2 * std::log(Fi);
+
 	}
 
 	return - 3 * (double)config::sample_cardinality / 2 + S1 - S2;
@@ -53,6 +53,7 @@ inline double get_ad_statistic_lower(const std::vector<double> &samples) noexcep
 
 template <int num=0, int den=1, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
 inline double get_ad_statistic(const std::vector<double> &samples) noexcept {
-	return get_ad_statistic_upper<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples)
-		+ get_ad_statistic_lower<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples);
+	double upper = get_ad_statistic_upper<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples);
+	double lower = get_ad_statistic_lower<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples);
+	return upper + lower;
 }

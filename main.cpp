@@ -68,7 +68,7 @@ unsigned int config::sample_cardinality;
 template<int alpha_num, int alpha_den>
 unsigned long perform_ad_run() {
 
-	double ad_critical_value = AndersonDarlingCV_EV<alpha_num, alpha_den>::get_critical_value(config::sample_cardinality, evt_param);
+	double ad_critical_value = AndersonDarlingCV_EV<alpha_num, alpha_den, false>::get_critical_value(config::sample_cardinality, evt_param);
 
 	unsigned long reject=0;
 

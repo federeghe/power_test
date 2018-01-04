@@ -6,7 +6,7 @@
 #include <cmath>
 #include <limits>
 
-template <int num, int den, int mu_num, int mu_den, int sigma_num, int sigma_den>
+template <int num, int den, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
 inline double get_ad_statistic_upper(const std::vector<double> &samples) noexcept {
 
 	double S1=0.0, S2=0.0;
@@ -20,7 +20,6 @@ inline double get_ad_statistic_upper(const std::vector<double> &samples) noexcep
 		if (Fi == 1.) return std::numeric_limits<double>::infinity();
 
 		S1 += Fi;
-
 		S2 += coeff1 * std::log(1. - Fi);
 
 	}
@@ -30,7 +29,7 @@ inline double get_ad_statistic_upper(const std::vector<double> &samples) noexcep
 	return (double)config::sample_cardinality / 2 - S1 - S2;
 }
 
-template <int num, int den, int mu_num, int mu_den, int sigma_num, int sigma_den>
+template <int num, int den, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
 inline double get_ad_statistic_lower(const std::vector<double> &samples) noexcept {
 
 	double S1=0.0, S2=0.0;
@@ -60,3 +59,31 @@ inline double get_ad_statistic(const std::vector<double> &samples) noexcept {
 
 	return upper + lower;
 }
+
+
+
+template <int num, int den, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
+inline double get_ad_statistic_full(const std::vector<double> &samples) noexcept {
+
+	double n = config::sample_cardinality;
+
+	double S1 = 0.0;
+	double S2 = 0.0;
+
+	for (unsigned int i=0; i < n; i++) {
+
+		int coeff1 = 2*(((int)i)+1)-1;
+		int coeff2 = 2*n - 2*(((int)i)+1) + 1;
+		double Fi = get_evt_cumulative<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples[i]);
+
+		S1 += coeff1 * std::log(Fi);
+		S2 += coeff2 * std::log(1.-Fi);
+	}
+
+
+	return - n - (1./n * S1) - (1./n * S2);
+}
+
+
+
+

@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <random>
+#include <iostream>
 
 typedef enum distribution_e {
 	NORMAL,
@@ -73,7 +74,7 @@ inline double montecarlo_evt_sample(std::mt19937 &rng) {
 	constexpr double mu=((double)mu_num)/((double)mu_den);
 	constexpr double sigma=((double)sigma_num)/((double)sigma_den);
 
-	std::uniform_real_distribution<double> distribution(mu,sigma);
+	std::uniform_real_distribution<double> distribution(0.0,1.0);
 
 	double x = distribution(rng);
 

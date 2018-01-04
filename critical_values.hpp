@@ -14,11 +14,57 @@ inline double get_ks_critical(unsigned long n) {
 
 
 
-template <int alpha_num, int alpha_den>
+template <int alpha_num, int alpha_den, bool upper_only=false>
 class AndersonDarlingCV_EV {
 
 	// From: "Approximation of modified Anderson-Darling test statisitcs for extreme value distributions with unknown shape parameter"
 	//		J. Heo, H. Shin, W. Nam, J. Om, C. Jeong
+
+};
+
+template <>
+class AndersonDarlingCV_EV<5, 100, true> {
+
+public:
+
+	static constexpr double safety_margin = 0.05;
+	
+	static double get_critical_value(unsigned long n, double shape_param) noexcept {
+
+		constexpr double a = 0.2776;
+		constexpr double b = -0.2441;
+		constexpr double c = 1.8927;
+		constexpr double d = -0.0267;
+		constexpr double e = 0.1586;
+		
+
+		double table_cv = a + b / n + c / (n*n) + d * (-shape_param) + e * shape_param * shape_param;
+
+		return table_cv + table_cv * safety_margin;
+	}
+
+};
+
+template <>
+class AndersonDarlingCV_EV<1, 100, true> {
+
+public:
+
+	static constexpr double safety_margin = 0.05;
+	
+	static double get_critical_value(unsigned long n, double shape_param) noexcept {
+
+		constexpr double a = 0.3828;
+		constexpr double b = -0.4179;
+		constexpr double c = 2.5682;
+		constexpr double d = -0.0362;
+		constexpr double e = 0.2134;
+		
+
+		double table_cv = a + b / n + c / (n*n) + d * (-shape_param) + e * shape_param * shape_param;
+
+		return table_cv + table_cv * safety_margin;
+	}
 
 };
 
@@ -38,7 +84,7 @@ public:
 		constexpr double e = 0.3388;
 		
 
-		double table_cv = a + b / n + c / (n*n) + d * shape_param + e * shape_param * shape_param;
+		double table_cv = a + b / n + c / (n*n) + d * (-shape_param) + e * shape_param * shape_param;
 
 		return table_cv + table_cv * safety_margin;
 	}
@@ -60,7 +106,7 @@ public:
 		constexpr double e = 0.8825;
 		
 
-		double table_cv = a + b / n + c / (n*n) + d * shape_param + e * shape_param * shape_param;
+		double table_cv = a + b / n + c / (n*n) + d * (-shape_param) + e * shape_param * shape_param;
 
 		return table_cv + table_cv * safety_margin;
 	}

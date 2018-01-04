@@ -7,10 +7,12 @@
 extern void fill_evt_cumulative(double xi, double mu, double sigma, std::vector<double> &output);
 extern void fill_evt_cumulative_xi0(double mu, double sigma, std::vector<double> &output);
 
-template <int num=0, int den=1, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
+template <int num, int den, int mu_num, int mu_den, int sigma_num, int sigma_den>
 extern double get_evt_cumulative(double x) {
 
 	static_assert(den != 0, "Denominator must be != from 0!");
+	static_assert(mu_den != 0, "Denominator must be != from 0!");
+	static_assert(sigma_den != 0, "Denominator must be != from 0!");
 
 	constexpr double xi=((double)num)/((double)den);
 	constexpr double mu=((double)mu_num)/((double)mu_den);

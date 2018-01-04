@@ -9,66 +9,20 @@
 #include <iostream>
 #include <omp.h>
 
-#define DIST_T_STUDENT 1
-#define DIST_UNIFORM 2
-#define DIST_EVT0 3
-#define DIST_EVT_0_5 4
-#define DIST_EVT_N_0_5 5
-#define DIST_NORMAL 6
-
-//#define H1 DIST_EVT_0_5
-
-//#define H0 DIST_EVT_0_5
-
-//#define DEBUG 1
-
-#define TEST_KS 1
-#define TEST_AD 2
-
-#if H0 == DIST_EVT0
-	#define EVT_PARAM_NUM 0
-	#define EVT_PARAM_DEN 1
-constexpr double evt_param = 0.0;
-#elif H0 == DIST_EVT_0_5
-	#define EVT_PARAM_NUM 1
-	#define EVT_PARAM_DEN 2
-constexpr double evt_param = 0.5;
-#elif H0 == DIST_EVT_N_0_5
-	#define EVT_PARAM_NUM -1
-	#define EVT_PARAM_DEN 2
-constexpr double evt_param = -0.5;
-#else
-	#error "Unknown distribution"
-#endif
-
-#if H1 == DIST_T_STUDENT
-	#define MONTE_CARLO_GENERATOR montecarlo_frequencies<T_STUDENT>
-#elif H1 == DIST_UNIFORM
-	#define MONTE_CARLO_GENERATOR montecarlo_frequencies<UNIFORM>
-#elif H1 == DIST_NORMAL
-	#define MONTE_CARLO_GENERATOR montecarlo_frequencies<NORMAL>
-#elif H1 == DIST_EVT0
-	#define MONTE_CARLO_GENERATOR montecarlo_frequencies_evt<0,1>
-#elif H1 == DIST_EVT_0_5
-	#define MONTE_CARLO_GENERATOR montecarlo_frequencies_evt<1,2>
-#elif H1 == DIST_EVT_N_0_5
-	#define MONTE_CARLO_GENERATOR montecarlo_frequencies_evt<-1,2>
-#else
-	#error "Unknown"
-#endif
-
 unsigned int config::sample_cardinality;
 
 template<int alpha_num, int alpha_den>
 unsigned long perform_ad_run() {
 
-	double ad_critical_value = AndersonDarlingCV_EV<alpha_num, alpha_den>::get_critical_value(config::sample_cardinality, evt_param);
+	constexpr double safe_margin = 0.05;
+
+	double ad_critical_value = (1. + safe_margin) * AndersonDarlingCV<alpha_num, alpha_den, false>::get_critical_value(config::sample_cardinality, evt_param);
 
 	unsigned long reject=0;
 
 	#pragma omp parallel
 	{
-		thread_local static std::mt19937 random_gen(std::random_device{}());
+		std::mt19937 random_gen(std::random_device{}());
 		std::vector<double> sample;
 		sample.resize(config::sample_cardinality);
 
@@ -76,12 +30,12 @@ unsigned long perform_ad_run() {
 		for (unsigned long j=0; j < config::runs; j++) {
 
 			for (unsigned int i=0; i < config::sample_cardinality; i++) {
-				sample[i] = montecarlo_evt_sample<EVT_PARAM_NUM, EVT_PARAM_DEN>(random_gen);
+				sample[i] = MONTE_CARLO_SAMPLING(random_gen);
 			}
 
 			std::sort(sample.begin(), sample.end());
 
-			double S = get_ad_statistic(sample);
+			double S = get_ad_statistic<EVT_PARAM_NUM, EVT_PARAM_DEN>(sample);
 			if ( S > ad_critical_value ) {
 				reject++;
 			}
@@ -172,15 +126,13 @@ int run() noexcept {
 	unsigned long not_reject=0;
 	not_reject = config::runs - reject;
 
-	std::cout << alpha << "," << config::sample_cardinality << "," << reject << "," << not_reject << "," << std::setprecision(51) << ((double)reject) / (not_reject+reject) << std::endl;
+	std::cout << std::setprecision(2) << alpha << "," << config::sample_cardinality << "," << reject << "," << not_reject << "," << std::setprecision(51) << ((double)reject) / (not_reject+reject) << std::endl;
 
 	return not_reject;
 
 }
 
 int main(int argc, char* argv[]) {
-
-
 
 	std::vector<unsigned int> cardinalities({50, 100, 250, 500, 750, 1000, 2500, 5000, 10000});
 
@@ -199,7 +151,6 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 	}
-
 
 	return 0;
 }

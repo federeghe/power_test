@@ -22,7 +22,7 @@ inline void put_output(double x, std::vector<unsigned int> &output) {
 
 	x = std::ceil(x * ratio) / ratio;
 	// Get the corresponding index
-	double index = (x - config::dist_min) / step;
+	unsigned int index = std::lround((x - config::dist_min) / step);
 
 	if (index < 0) index = 0;
 	if (index > config::sample_cardinality-1) index = config::sample_cardinality-1;
@@ -86,7 +86,6 @@ inline double montecarlo_evt_sample(std::mt19937 &rng) {
 	}
 
 	return x;
-
 }
 
 

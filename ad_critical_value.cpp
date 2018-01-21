@@ -8,7 +8,7 @@
 #include <iostream>
 #include <omp.h>
 
-#define RUNS 10000
+#define RUNS 1000000
 
 unsigned int config::sample_cardinality;
 
@@ -60,16 +60,16 @@ void compute(double s) {
 	}
 
 	std::cout << "\t\tcase " << config::sample_cardinality << ":" << std::endl;
-	std::cout << "\t\t\t if (shape_param==-0.5) return "	<< std::setprecision(6) << crits_1[(int)(s * RUNS)] << ';' << std::endl;
-	std::cout << "\t\t\t if (shape_param== 0.0) return " 	<< std::setprecision(6) << crits_2[(int)(s * RUNS)] << ';' <<  std::endl;
-	std::cout << "\t\t\t if (shape_param== 0.5) return "	<< std::setprecision(6) << crits_3[(int)(s * RUNS)] << ';' <<  std::endl;
+	std::cout << "\t\t\t if (shape_param==-0.5) return "	<< std::setprecision(10) << crits_1[(int)(s * RUNS)] << ';' << std::endl;
+	std::cout << "\t\t\t if (shape_param== 0.0) return " 	<< std::setprecision(10) << crits_2[(int)(s * RUNS)] << ';' <<  std::endl;
+	std::cout << "\t\t\t if (shape_param== 0.5) return "	<< std::setprecision(10) << crits_3[(int)(s * RUNS)] << ';' <<  std::endl;
 	std::cout << "\t\tbreak;" << std::endl;
 
 }
 
 int main() {
 
-	std::vector<unsigned int> cardinalities({50, 100, 250, 500, 750, 1000, 2500, 5000, 10000});
+	std::vector<unsigned int> cardinalities({50 /*, 100, 200, 250, 300, 400, 500, 750, 1000, 2500, 5000, 10000*/});
 
 	std::vector<double> significance_level({0.95, 0.99});
 

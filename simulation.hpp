@@ -60,7 +60,7 @@ constexpr double evt_param = -0.5;
 namespace config {
 	constexpr double dist_min=-15;
 	constexpr double dist_max=15;
-	constexpr unsigned long runs = 1e4;
+	constexpr unsigned long runs = 1e9;
 	extern unsigned int sample_cardinality;
 }
 

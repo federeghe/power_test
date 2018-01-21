@@ -14,7 +14,7 @@ unsigned int config::sample_cardinality;
 template<int alpha_num, int alpha_den>
 unsigned long perform_ad_run() {
 
-	constexpr double safe_margin = 0.05;
+	constexpr double safe_margin = 0.00;
 
 	double ad_critical_value = (1. + safe_margin) * AndersonDarlingCV<alpha_num, alpha_den, false>::get_critical_value(config::sample_cardinality, evt_param);
 

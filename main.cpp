@@ -134,7 +134,7 @@ int run() noexcept {
 
 int main(int argc, char* argv[]) {
 
-	std::vector<unsigned int> cardinalities({50, 100, 250, 500, 750, 1000, 2500, 5000, 10000});
+	std::vector<unsigned int> cardinalities({50, 100, 150, 200, 300, 400, 500, 750, 1000, 2500, 5000, 10000});
 
 	for (const auto i : cardinalities) {
 		config::sample_cardinality = i;

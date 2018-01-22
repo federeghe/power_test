@@ -69,7 +69,7 @@ void compute(double s) {
 
 int main() {
 
-	std::vector<unsigned int> cardinalities({50 /*, 100, 200, 250, 300, 400, 500, 750, 1000, 2500, 5000, 10000*/});
+	std::vector<unsigned int> cardinalities({50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 2500, 5000, 10000});
 
 	std::vector<double> significance_level({0.95, 0.99});
 

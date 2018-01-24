@@ -8,8 +8,12 @@
 #include <iomanip>    
 #include <iostream>
 #include <omp.h>
+#include <mpi.h>
 
 unsigned int config::sample_cardinality;
+
+int mpi_world_rank;
+int mpi_world_size;
 
 template<int alpha_num, int alpha_den>
 unsigned long perform_ad_run() {
@@ -19,6 +23,10 @@ unsigned long perform_ad_run() {
 	double ad_critical_value = (1. + safe_margin) * AndersonDarlingCV<alpha_num, alpha_den, false>::get_critical_value(config::sample_cardinality, evt_param);
 
 	unsigned long reject=0;
+	unsigned long this_node_runs = config::runs / mpi_world_size;
+	if (mpi_world_rank == 0) {
+		this_node_runs += config::runs % mpi_world_size;
+	}
 
 	#pragma omp parallel
 	{
@@ -27,7 +35,7 @@ unsigned long perform_ad_run() {
 		sample.resize(config::sample_cardinality);
 
 		#pragma omp for reduction(+:reject)
-		for (unsigned long j=0; j < config::runs; j++) {
+		for (unsigned long j=0; j < this_node_runs; j++) {
 
 			for (unsigned int i=0; i < config::sample_cardinality; i++) {
 				sample[i] = MONTE_CARLO_SAMPLING(random_gen);
@@ -39,12 +47,14 @@ unsigned long perform_ad_run() {
 			if ( S > ad_critical_value ) {
 				reject++;
 			}
-#if DEBUG
-			std::cout << "S=" << S << " crit_value=" << ad_critical_value << std::endl;
-#endif
 		}
 	}
-	return reject;
+
+	unsigned long global_reject;
+	MPI_Allreduce(&reject, &global_reject, 1, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD);
+
+
+	return global_reject;
 }
 
 template<int alpha_num, int alpha_den>
@@ -62,6 +72,10 @@ unsigned long perform_ks_run() {
 	double ks_critical_value = get_ks_critical<alpha_num, alpha_den>(config::sample_cardinality);
 
 	unsigned long reject=0;
+	unsigned long this_node_runs = config::runs / mpi_world_size;
+	if (mpi_world_rank == 0) {
+		this_node_runs += config::runs % mpi_world_size;
+	}
 
 	#pragma omp parallel firstprivate(F_evt)
 	{
@@ -75,25 +89,15 @@ unsigned long perform_ks_run() {
 		F_montecarlo.resize(config::sample_cardinality);
 
 		#pragma omp for reduction(+:reject)
-		for (unsigned long j=0; j < config::runs; j++) {
+		for (unsigned long j=0; j < this_node_runs; j++) {
 
 			std::fill(freq_montecarlo.begin(), freq_montecarlo.end(), 0);
 
-#if DEBUG
-			if(omp_get_thread_num() == 0) {
-				if ( j % (config::runs/80) == 0)
-					std::cout << " " << j*8 << "/" << config::runs << std::endl;
-			}
-#endif
 			MONTE_CARLO_GENERATOR(random_gen, freq_montecarlo);
 
 			calculate_cumulative(freq_montecarlo, F_montecarlo);
 
 			for (unsigned int i=0; i < config::sample_cardinality; i++) {
-#if DEBUG
-				std::cout << i << ": " << F_evt[i] << "==" <<  F_montecarlo[i] << std::endl;
-#endif
-
 				double diff = std::abs(F_evt[i] - F_montecarlo[i]);
 				if (diff > ks_critical_value) {
 					reject++;
@@ -103,11 +107,13 @@ unsigned long perform_ks_run() {
 
 
 		}
-	
 	}
 
+	unsigned long global_reject;
+	MPI_Allreduce(&reject, &global_reject, 1, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD);
 
-	return reject;
+
+	return global_reject;
 
 }
 
@@ -126,13 +132,22 @@ int run() noexcept {
 	unsigned long not_reject=0;
 	not_reject = config::runs - reject;
 
-	std::cout << std::setprecision(2) << alpha << "," << config::sample_cardinality << "," << reject << "," << not_reject << "," << std::setprecision(51) << ((double)reject) / (not_reject+reject) << std::endl;
+//	std::cout << "My rank is " << mpi_world_rank << std::endl;
+
+	if (mpi_world_rank == 0) {
+		std::cout << std::setprecision(2) << alpha << "," << config::sample_cardinality << "," << reject << "," << not_reject << "," << std::setprecision(51) << ((double)reject) / (not_reject+reject) << std::endl;
+	}
 
 	return not_reject;
-
 }
 
 int main(int argc, char* argv[]) {
+
+	MPI_Init(NULL, NULL);
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_world_rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_world_size);
+
 
 	std::vector<unsigned int> cardinalities({50, 100, 150, 200, 300, 400, 500, 750, 1000, 2500, 5000, 10000});
 
@@ -151,6 +166,8 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 	}
+
+	MPI_Finalize();
 
 	return 0;
 }

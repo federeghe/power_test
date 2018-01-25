@@ -169,3 +169,159 @@ public:
 	}
 };
 
+template <int alpha_num, int alpha_den, bool upper_only=false>
+class AndersonDarlingCV_UPPER {
+
+	// From: "Approximation of modified Anderson-Darling test statisitcs for extreme value distributions with unknown shape parameter"
+	//		J. Heo, H. Shin, W. Nam, J. Om, C. Jeong
+
+};
+
+template <>
+class AndersonDarlingCV_UPPER<5, 100> {
+public:
+	static double get_critical_value(unsigned int cardinality, double shape_param) {
+		switch(cardinality) {
+		case 50:
+			 if (shape_param==-0.5) return 1.30227776;
+			 if (shape_param== 0.0) return 1.30199716;
+			 if (shape_param== 0.5) return 1.306991668;
+		break;
+		case 100:
+			 if (shape_param==-0.5) return 1.301841998;
+			 if (shape_param== 0.0) return 1.306409406;
+			 if (shape_param== 0.5) return 1.304260943;
+		break;
+		case 150:
+			 if (shape_param==-0.5) return 1.303152793;
+			 if (shape_param== 0.0) return 1.305088182;
+			 if (shape_param== 0.5) return 1.301583148;
+		break;
+		case 200:
+			 if (shape_param==-0.5) return 1.302306116;
+			 if (shape_param== 0.0) return 1.303087216;
+			 if (shape_param== 0.5) return 1.303143223;
+		break;
+		case 250:
+			 if (shape_param==-0.5) return 1.299707246;
+			 if (shape_param== 0.0) return 1.3007512;
+			 if (shape_param== 0.5) return 1.302883938;
+		break;
+		case 300:
+			 if (shape_param==-0.5) return 1.303490592;
+			 if (shape_param== 0.0) return 1.302240504;
+			 if (shape_param== 0.5) return 1.305810346;
+		break;
+		case 400:
+			 if (shape_param==-0.5) return 1.30488691;
+			 if (shape_param== 0.0) return 1.305784618;
+			 if (shape_param== 0.5) return 1.303298465;
+		break;
+		case 500:
+			 if (shape_param==-0.5) return 1.297476928;
+			 if (shape_param== 0.0) return 1.301923002;
+			 if (shape_param== 0.5) return 1.300142947;
+		break;
+		case 750:
+			 if (shape_param==-0.5) return 1.303292006;
+			 if (shape_param== 0.0) return 1.306332535;
+			 if (shape_param== 0.5) return 1.298857487;
+		break;
+		case 1000:
+			 if (shape_param==-0.5) return 1.299657242;
+			 if (shape_param== 0.0) return 1.305620808;
+			 if (shape_param== 0.5) return 1.305138494;
+		break;
+		case 2500:
+			 if (shape_param==-0.5) return 1.304225486;
+			 if (shape_param== 0.0) return 1.299562144;
+			 if (shape_param== 0.5) return 1.302144513;
+		break;
+		case 5000:
+			 if (shape_param==-0.5) return 1.301739083;
+			 if (shape_param== 0.0) return 1.303781991;
+			 if (shape_param== 0.5) return 1.304817548;
+		break;
+		case 10000:
+			 if (shape_param==-0.5) return 1.302808865;
+			 if (shape_param== 0.0) return 1.300236503;
+			 if (shape_param== 0.5) return 1.299472353;
+		break;
+		}
+		assert(false);
+	}
+};
+template <>
+class AndersonDarlingCV_UPPER<1, 100> {
+public:
+	static double get_critical_value(unsigned int cardinality, double shape_param) {
+		switch(cardinality) {
+		case 50:
+			 if (shape_param==-0.5) return 2.079868153;
+			 if (shape_param== 0.0) return 2.079540364;
+			 if (shape_param== 0.5) return 2.080597454;
+		break;
+		case 100:
+			 if (shape_param==-0.5) return 2.072568519;
+			 if (shape_param== 0.0) return 2.070659818;
+			 if (shape_param== 0.5) return 2.073940917;
+		break;
+		case 150:
+			 if (shape_param==-0.5) return 2.073741786;
+			 if (shape_param== 0.0) return 2.070340229;
+			 if (shape_param== 0.5) return 2.06721026;
+		break;
+		case 200:
+			 if (shape_param==-0.5) return 2.071085263;
+			 if (shape_param== 0.0) return 2.061579587;
+			 if (shape_param== 0.5) return 2.057173657;
+		break;
+		case 250:
+			 if (shape_param==-0.5) return 2.071074206;
+			 if (shape_param== 0.0) return 2.059420721;
+			 if (shape_param== 0.5) return 2.056609281;
+		break;
+		case 300:
+			 if (shape_param==-0.5) return 2.06048051;
+			 if (shape_param== 0.0) return 2.065203622;
+			 if (shape_param== 0.5) return 2.063771789;
+		break;
+		case 400:
+			 if (shape_param==-0.5) return 2.060209887;
+			 if (shape_param== 0.0) return 2.066727898;
+			 if (shape_param== 0.5) return 2.060353413;
+		break;
+		case 500:
+			 if (shape_param==-0.5) return 2.055336251;
+			 if (shape_param== 0.0) return 2.057690045;
+			 if (shape_param== 0.5) return 2.053739255;
+		break;
+		case 750:
+			 if (shape_param==-0.5) return 2.0591838;
+			 if (shape_param== 0.0) return 2.059023775;
+			 if (shape_param== 0.5) return 2.065388522;
+		break;
+		case 1000:
+			 if (shape_param==-0.5) return 2.057976117;
+			 if (shape_param== 0.0) return 2.057185359;
+			 if (shape_param== 0.5) return 2.063604049;
+		break;
+		case 2500:
+			 if (shape_param==-0.5) return 2.051217776;
+			 if (shape_param== 0.0) return 2.059171445;
+			 if (shape_param== 0.5) return 2.061884222;
+		break;
+		case 5000:
+			 if (shape_param==-0.5) return 2.060789138;
+			 if (shape_param== 0.0) return 2.052528229;
+			 if (shape_param== 0.5) return 2.059770473;
+		break;
+		case 10000:
+			 if (shape_param==-0.5) return 2.054734726;
+			 if (shape_param== 0.0) return 2.062242055;
+			 if (shape_param== 0.5) return 2.064245176;
+		break;
+		}
+		assert(false);
+	}
+};

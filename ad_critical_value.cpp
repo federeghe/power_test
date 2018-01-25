@@ -8,7 +8,7 @@
 #include <iostream>
 #include <omp.h>
 
-#define RUNS 1000000
+#define RUNS 1000000UL
 
 unsigned int config::sample_cardinality;
 
@@ -21,8 +21,6 @@ void compute(double s) {
 	crits_2.resize(RUNS);
 	crits_3.resize(RUNS);
 
-
-
 	#pragma omp parallel 
 	{
 		std::vector<double> sample_1;
@@ -34,7 +32,7 @@ void compute(double s) {
 
 		std::mt19937 random_gen(std::random_device{}());
 		#pragma omp for
-		for (unsigned int i=0; i < RUNS; i++) {
+		for (unsigned long i=0; i < RUNS; i++) {
 			for (unsigned int j=0; j < config::sample_cardinality; j++) {
 				sample_1[j] = montecarlo_evt_sample<-1, 2>(random_gen);
 				sample_2[j] = montecarlo_evt_sample<0, 1> (random_gen);
@@ -43,9 +41,9 @@ void compute(double s) {
 			std::sort(sample_1.begin(), sample_1.end());
 			std::sort(sample_2.begin(), sample_2.end());
 			std::sort(sample_3.begin(), sample_3.end());
-			crits_1[i] = get_ad_statistic<-1, 2>(sample_1);
-			crits_2[i] = get_ad_statistic<0, 1> (sample_2);
-			crits_3[i] = get_ad_statistic<1, 2> (sample_3);
+			crits_1[i] = get_ad_statistic_upper<-1, 2>(sample_1);
+			crits_2[i] = get_ad_statistic_upper<0, 1> (sample_2);
+			crits_3[i] = get_ad_statistic_upper<1, 2> (sample_3);
 		}
 
 		#pragma omp sections
@@ -75,7 +73,7 @@ int main() {
 
 	for (const auto s : significance_level) {
 		std::cout << "template <>" << std::endl;
-		std::cout << "class AndersonDarlingCV<" << (int)((1-s)*100) << ", 100> {" << std::endl;
+		std::cout << "class AndersonDarlingCV_UPPER<" << (int)((1-s)*100) << ", 100> {" << std::endl;
 		std::cout << "public:" << std::endl;
 
 		std::cout << "\tstatic double get_critical_value(unsigned int cardinality, double shape_param) {" << std::endl;

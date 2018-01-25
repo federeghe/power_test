@@ -20,7 +20,12 @@ unsigned long perform_ad_run() {
 
 	constexpr double safe_margin = 0.00;
 
+#if TEST == TEST_AD
 	double ad_critical_value = (1. + safe_margin) * AndersonDarlingCV<alpha_num, alpha_den, false>::get_critical_value(config::sample_cardinality, evt_param);
+#elif TEST == TEST_MAD
+	double ad_critical_value = (1. + safe_margin) * AndersonDarlingCV_UPPER<alpha_num, alpha_den, false>::get_critical_value(config::sample_cardinality, evt_param);
+#endif
+
 
 	unsigned long reject=0;
 	unsigned long this_node_runs = config::runs / mpi_world_size;
@@ -43,7 +48,11 @@ unsigned long perform_ad_run() {
 
 			std::sort(sample.begin(), sample.end());
 
+#if TEST == TEST_AD
 			double S = get_ad_statistic<EVT_PARAM_NUM, EVT_PARAM_DEN>(sample);
+#elif TEST == TEST_MAD
+			double S = get_ad_statistic_upper<EVT_PARAM_NUM, EVT_PARAM_DEN>(sample);
+#endif
 			if ( S > ad_critical_value ) {
 				reject++;
 			}
@@ -123,7 +132,7 @@ int run() noexcept {
 
 	#if TEST == TEST_KS
 		unsigned long reject=perform_ks_run<alpha_num, alpha_den>();
-	#elif TEST == TEST_AD
+	#elif TEST == TEST_AD || TEST == TEST_MAD
 		unsigned long reject=perform_ad_run<alpha_num, alpha_den>();
 	#else
 		#error "Unknown test"

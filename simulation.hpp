@@ -17,6 +17,7 @@
 
 #define TEST_KS 1
 #define TEST_AD 2
+#define TEST_MAD 3
 
 #if H0 == DIST_EVT0
 	#define EVT_PARAM_NUM 0

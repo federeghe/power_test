@@ -30,7 +30,7 @@ double compute_ad_crit_value() {
 
 	#pragma omp parallel 
 	{
-		std::mt19937 random_gen(std::random_device{}());
+		thread_local static std::mt19937 random_gen(std::random_device{}());
 		#pragma omp for
 		for (unsigned long i=0; i < NR_RUNS_CRIT; i++) {
 			for (unsigned int j=0; j < config::sample_cardinality; j++) {

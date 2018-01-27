@@ -17,7 +17,11 @@
 #define TEST_AD  2 
 #define TEST_MAD 3
 
+#define MAX_SAMPLE_CARDINALITY 20000
+
 unsigned int config::sample_cardinality;
+
+thread_local double sample[MAX_SAMPLE_CARDINALITY];
 
 template <int num, int den, int significance_num, int significance_den>
 double compute_ad_crit_value() {
@@ -26,16 +30,13 @@ double compute_ad_crit_value() {
 
 	#pragma omp parallel 
 	{
-		std::vector<double> sample;
-		sample.resize(config::sample_cardinality);
-
 		std::mt19937 random_gen(std::random_device{}());
 		#pragma omp for
 		for (unsigned long i=0; i < NR_RUNS_CRIT; i++) {
 			for (unsigned int j=0; j < config::sample_cardinality; j++) {
 				sample[j] = montecarlo_evt_sample<num, den>(random_gen);
 			}
-			std::sort(sample.begin(), sample.end());
+			std::sort(std::begin(sample), std::end(sample));
 #if TEST==TEST_AD
 			crits[i] = get_ad_statistic<num, den>(sample);
 #endif
@@ -69,8 +70,6 @@ static inline void run() noexcept {
 	#pragma omp parallel
 	{
 		thread_local static std::mt19937 random_gen(std::random_device{}());
-		std::vector<double> sample;
-		sample.resize(config::sample_cardinality);
 
 		#pragma omp for reduction(+:reject1,reject2)
 		for (unsigned long j=0; j < NR_RUNS; j++) {
@@ -80,7 +79,7 @@ static inline void run() noexcept {
 				sample[i] = montecarlo_evt_sample<num, den>(random_gen);
 			}
 
-			std::sort(sample.begin(), sample.end());
+			std::sort(std::begin(sample), std::end(sample));
 
 #if TEST == TEST_AD
 			double S = get_ad_statistic<0, 1>(sample);
@@ -211,6 +210,7 @@ int main(int argc, char* argv[]) {
 
 	for (const auto i : cardinalities) {
 		config::sample_cardinality = i;
+		assert(config::sample_cardinality <= MAX_SAMPLE_CARDINALITY);
 		static_for<1,501>()();
 	}
 	

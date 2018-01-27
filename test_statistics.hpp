@@ -7,7 +7,7 @@
 #include <limits>
 
 template <int num, int den, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
-inline double get_ad_statistic_upper(const std::vector<double> &samples) noexcept {
+inline double get_ad_statistic_upper(const double *samples) noexcept {
 
 	double S1=0.0, S2=0.0;
 
@@ -30,7 +30,7 @@ inline double get_ad_statistic_upper(const std::vector<double> &samples) noexcep
 }
 
 template <int num, int den, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
-inline double get_ad_statistic_lower(const std::vector<double> &samples) noexcept {
+inline double get_ad_statistic_lower(const double *samples) noexcept {
 
 	double S1=0.0, S2=0.0;
 
@@ -53,7 +53,7 @@ inline double get_ad_statistic_lower(const std::vector<double> &samples) noexcep
 }
 
 template <int num, int den, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
-inline double get_ad_statistic(const std::vector<double> &samples) noexcept {
+inline double get_ad_statistic(const double *samples) noexcept {
 	double upper = get_ad_statistic_upper<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples);
 	double lower = get_ad_statistic_lower<num, den, mu_num, mu_den, sigma_num, sigma_den>(samples);
 
@@ -63,7 +63,7 @@ inline double get_ad_statistic(const std::vector<double> &samples) noexcept {
 
 
 template <int num, int den, int mu_num=0, int mu_den=1, int sigma_num=1, int sigma_den=1>
-inline double get_ad_statistic_full(const std::vector<double> &samples) noexcept {
+inline double get_ad_statistic_full(const double *samples) noexcept {
 
 	double n = config::sample_cardinality;
 

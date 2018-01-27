@@ -10,7 +10,7 @@
 #include <omp.h>
 
 #define NR_RUNS 1000
-#define NR_RUNS_CRIT 10000
+#define NR_RUNS_CRIT 1000
 #define DEBUG 0
 
 #define TEST_KS  1
@@ -25,10 +25,9 @@ thread_local double sample[MAX_SAMPLE_CARDINALITY];
 
 template <int num, int den, int significance_num, int significance_den>
 double compute_ad_crit_value() {
-	std::vector<double> crits;
-	crits.resize(NR_RUNS_CRIT);
+	double crits[NR_RUNS_CRIT];
 
-	#pragma omp parallel 
+	#pragma omp parallel
 	{
 		thread_local static std::mt19937 random_gen(std::random_device{}());
 		#pragma omp for
@@ -45,7 +44,7 @@ double compute_ad_crit_value() {
 #endif
 		}
 	}
-	std::sort(crits.begin(),crits.end());
+	std::sort(std::begin(crits),std::end(crits));
 
 	return crits[(int)(((double)significance_num/(double)significance_den) * NR_RUNS_CRIT)];
 }
@@ -67,7 +66,7 @@ static inline void run() noexcept {
 	unsigned long reject1=0;
 	unsigned long reject2=0;
 
-	#pragma omp parallel
+	#pragma omp parallel firstprivate(ad_critical_value1, ad_critical_value2, config::sample_cardinality)
 	{
 		thread_local static std::mt19937 random_gen(std::random_device{}());
 

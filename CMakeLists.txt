@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(power_test)
 
-SET(CMAKE_C_COMPILER mpicc)
-SET(CMAKE_CXX_COMPILER mpicxx)
+SET(CMAKE_C_COMPILER mpiicc)
+SET(CMAKE_CXX_COMPILER mpiicpc)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp -lpthread -Wall -pedantic -std=c++11")
 
 

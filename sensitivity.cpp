@@ -7,17 +7,21 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <omp.h>
+#include <mpi.h>
 
 #define NR_RUNS 1000
 #define NR_RUNS_CRIT 1000
 #define DEBUG 0
 
 #define TEST_KS  1
-#define TEST_AD  2 
+#define TEST_AD  2
 #define TEST_MAD 3
 
-#define MAX_SAMPLE_CARDINALITY 20000
+#define MAX_SAMPLE_CARDINALITY 10000
+
+std::ofstream file_output;
 
 unsigned int config::sample_cardinality;
 
@@ -61,7 +65,7 @@ static inline void run() noexcept {
 	const double ad_critical_value1 = compute_ad_crit_value<0, 1, 99, 100>();
 	const double ad_critical_value2 = compute_ad_crit_value<0, 1, 95, 100>();
 
-	std::cout << config::sample_cardinality << " " << xi << " ";
+	file_output << config::sample_cardinality << " " << xi << " ";
 
 	unsigned long reject1=0;
 	unsigned long reject2=0;
@@ -96,10 +100,10 @@ static inline void run() noexcept {
 		}
 	
 	}
-	std::cout << reject1;
-	std::cout << " ";
-	std::cout << reject2;
-	std::cout << std::endl;
+	file_output << reject1;
+	file_output << " ";
+	file_output << reject2;
+	file_output << std::endl;
 
 }
 #endif
@@ -119,7 +123,7 @@ static inline void run() noexcept {
 	double ks_critical_value1 = get_ks_critical<1, 100>(config::sample_cardinality);
 	double ks_critical_value2 = get_ks_critical<5, 100>(config::sample_cardinality);
 
-	std::cout << config::sample_cardinality << " " << xi << " ";
+	file_output << config::sample_cardinality << " " << xi << " ";
 
 	unsigned long reject1=0;
 	unsigned long reject2=0;
@@ -148,20 +152,20 @@ static inline void run() noexcept {
 			bool b_reject2=false;
 			for (unsigned int i=0; i < config::sample_cardinality; i++) {
 				double diff = std::abs(F_evt[i] - F_montecarlo[i]);
-//				std::cout << diff << ">" << ks_critical_value1 << std::endl;
+//				file_output << diff << ">" << ks_critical_value1 << std::endl;
 				if (diff > ks_critical_value1) {
 					b_reject1 = true;
-//					std::cout << "    RIGETTONE 1 - " << F_evt[i-1] <<"==" << F_montecarlo[i-1] << " (" << freq_montecarlo[i-1] << ")" << std::endl;
-//					std::cout << "    RIGETTONE 1 - " << F_evt[i] <<"==" << F_montecarlo[i] << " (" << freq_montecarlo[i] << ")"<< std::endl;
-//					std::cout << "    RIGETTONE 1 - " << F_evt[i+1] <<"==" << F_montecarlo[i+1] << " (" << freq_montecarlo[i+1] << ")"<< std::endl;
+//					file_output << "    RIGETTONE 1 - " << F_evt[i-1] <<"==" << F_montecarlo[i-1] << " (" << freq_montecarlo[i-1] << ")" << std::endl;
+//					file_output << "    RIGETTONE 1 - " << F_evt[i] <<"==" << F_montecarlo[i] << " (" << freq_montecarlo[i] << ")"<< std::endl;
+//					file_output << "    RIGETTONE 1 - " << F_evt[i+1] <<"==" << F_montecarlo[i+1] << " (" << freq_montecarlo[i+1] << ")"<< std::endl;
 				}
 				if (diff > ks_critical_value2) {
 					b_reject2 = true;
-//					std::cout << "    RIGETTONE 2 - i=" << i << " " << F_evt[i-2] <<"==" << F_montecarlo[i-1] << " (" << freq_montecarlo[i-2] << ")" << std::endl;
-//					std::cout << "    RIGETTONE 2 - i=" << i << " " << F_evt[i-1] <<"==" << F_montecarlo[i-1] << " (" << freq_montecarlo[i-1] << ")" << std::endl;
-//					std::cout << "    RIGETTONE 2 - i=" << i << " " << F_evt[i] <<"==" << F_montecarlo[i] << " (" << freq_montecarlo[i] << ")"<< std::endl;
-//					std::cout << "    RIGETTONE 2 - i=" << i << " " << F_evt[i+1] <<"==" << F_montecarlo[i+1] << " (" << freq_montecarlo[i+1] << ")"<< std::endl;
-//					std::cout << "    RIGETTONE 2 - i=" << i << " " << F_evt[i+2] <<"==" << F_montecarlo[i+2] << " (" << freq_montecarlo[i+2] << ")" << std::endl;
+//					file_output << "    RIGETTONE 2 - i=" << i << " " << F_evt[i-2] <<"==" << F_montecarlo[i-1] << " (" << freq_montecarlo[i-2] << ")" << std::endl;
+//					file_output << "    RIGETTONE 2 - i=" << i << " " << F_evt[i-1] <<"==" << F_montecarlo[i-1] << " (" << freq_montecarlo[i-1] << ")" << std::endl;
+//					file_output << "    RIGETTONE 2 - i=" << i << " " << F_evt[i] <<"==" << F_montecarlo[i] << " (" << freq_montecarlo[i] << ")"<< std::endl;
+//					file_output << "    RIGETTONE 2 - i=" << i << " " << F_evt[i+1] <<"==" << F_montecarlo[i+1] << " (" << freq_montecarlo[i+1] << ")"<< std::endl;
+//					file_output << "    RIGETTONE 2 - i=" << i << " " << F_evt[i+2] <<"==" << F_montecarlo[i+2] << " (" << freq_montecarlo[i+2] << ")" << std::endl;
 				}
 				if (diff > ks_critical_value1 && diff > ks_critical_value2) break;
 			}
@@ -172,10 +176,10 @@ static inline void run() noexcept {
 		}
 	
 	}
-	std::cout << reject1;
-	std::cout << " ";
-	std::cout << reject2;
-	std::cout << std::endl;
+	file_output << reject1;
+	file_output << " ";
+	file_output << reject2;
+	file_output << std::endl;
 
 }
 #endif
@@ -199,11 +203,26 @@ struct static_for<to,to>
 
 int main(int argc, char* argv[]) {
 
+	MPI_Init(NULL, NULL);
+	int world_size;
+	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+	// Get the rank of the process
+	int world_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+
+	file_output.open("sensitivity_" + std::to_string(world_rank) +".txt");
+
+	unsigned int extra_first = (MAX_SAMPLE_CARDINALITY/10) % world_size;
 
 	std::vector<unsigned int> cardinalities;
-	for (int i=0; i<500; i++) {
+	for (int i=world_rank+extra_first; i < (MAX_SAMPLE_CARDINALITY/10); i+=world_size) {
 		cardinalities.push_back((i+1)*10);
+	}
+
+	if (world_rank < extra_first) {
+		cardinalities.push_back((world_rank+1)*10);
 	}
 
 
@@ -212,7 +231,13 @@ int main(int argc, char* argv[]) {
 		assert(config::sample_cardinality <= MAX_SAMPLE_CARDINALITY);
 		static_for<1,501>()();
 	}
-	
+
+	file_output.close();
+
+	// Finalize the MPI environment.
+	MPI_Finalize();
+
+
 	return 0;
 }
 
